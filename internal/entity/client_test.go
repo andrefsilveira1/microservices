@@ -16,7 +16,22 @@ func TestCreateNewClient(t *testing.T) {
 }
 
 func TestCreateNewClientWhenInvalidParameters(t *testing.T) {
-	client, err := NewCleint("André Freitas", "andre.com")
+	client, err := NewCleint("", "")
 	assert.NotNil(t, err)
 	assert.Nil(t, client)
+}
+
+func TestUpdateClient(t *testing.T) {
+	client, _ := NewCleint("Andre", "andre.com")
+	err := client.Update("andre", "freitas.com")
+	assert.Nil(t, err)
+	assert.Equal(t, "andre", client.Name)
+	assert.Equal(t, "freitas.com", client.Email)
+}
+
+func TestUpdateClientWithInvalidParameters(t *testing.T) {
+	client, _ := NewCleint("Andre", "andre.com")
+	err := client.Update("", "freitas.com")
+	assert.Error(t, err, "name is required")
+	assert.Equal(t, "freitas.com", client.Email)
 }
