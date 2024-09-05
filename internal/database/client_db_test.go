@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/andrefsilveira1/microservices/internal/entity"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -28,4 +29,26 @@ func (s *ClientDBTestSuite) TearDownSwuite() {
 
 func TestClientDBTestSuite(t *testing.T) {
 	suite.Run(t, new(ClientDBTestSuite))
+}
+
+func (s *ClientDBTestSuite) TestSave() {
+	client := &entity.Client{
+		ID:    "1",
+		Name:  "Test",
+		Email: "andre.com",
+	}
+
+	err := s.clientDB.Save(client)
+	s.Nil(err)
+}
+
+func (s *ClientDBTestSuite) TestGet() {
+	client, _ := entity.NewClient("andre", "andre.com")
+	s.clientDB.Save(client)
+
+	clientDB, err := s.clientDB.Get(client.ID)
+	s.Nil(err)
+	s.Equal(client.ID, clientDB.ID)
+	s.Equal(client.Name, clientDB.Name)
+	s.Equal(client.Email, clientDB.Email)
 }
