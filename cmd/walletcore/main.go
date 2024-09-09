@@ -11,6 +11,8 @@ import (
 	createaccount "github.com/andrefsilveira1/microservices/internal/usecase/create_account"
 	createclient "github.com/andrefsilveira1/microservices/internal/usecase/create_client"
 	createtransaction "github.com/andrefsilveira1/microservices/internal/usecase/create_transaction"
+	"github.com/andrefsilveira1/microservices/internal/web"
+	"github.com/andrefsilveira1/microservices/internal/web/server"
 	"github.com/andrefsilveira1/microservices/pkg/events"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -45,4 +47,15 @@ func main() {
 	createAccountUseCase := createaccount.NewCreateAccountUseCase(accountDb, clientDb)
 	createTransacstionUseCase := createtransaction.NewCreateTransactionUseCase(transactionDb, accountDb, eventDispatcher, transactionCreatedEvent)
 
+	server := server.NewServer(":3000")
+
+	clientHandler := web.NewWebClientHandler(*createClientUseCase)
+	accountHandler := web.NewWebAccountHandler(*createAccountUseCase)
+	transactionHandler := web.NewWebTransactionHandler(*createTransacstionUseCase)
+
+	server.AddHandler("/clients", clientHandler.CreateClient)
+	server.AddHandler("/accounts", accountHandler.CreateAccount)
+	server.AddHandler("/transactions", transactionHandler.CreateTransaction)
+
+	server.Start()
 }
