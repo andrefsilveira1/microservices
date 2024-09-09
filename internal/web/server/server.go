@@ -13,10 +13,10 @@ type Server struct {
 	ServerPort string
 }
 
-func NewServer(router chi.Router, handlers map[string]http.HandlerFunc, serverPort string) *Server {
+func NewServer(serverPort string) *Server {
 	return &Server{
-		Router:     router,
-		Handlers:   handlers,
+		Router:     chi.NewRouter(),
+		Handlers:   make(map[string]http.HandlerFunc),
 		ServerPort: serverPort,
 	}
 }
