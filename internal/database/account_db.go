@@ -21,7 +21,7 @@ func (a *AccountDB) Find(id string) (*entity.Account, error) {
 	var client entity.Client
 	account.Client = &client
 
-	stmt, err := a.DB.Prepare("SELECT a.id, a.client_id, a.balance, a.created_at, c.id, c.name, c.email, c.created_at FROM accounts a INNER JOIN clients c ON a.client_id = c.id WHERE a.id = ?")
+	stmt, err := a.DB.Prepare("SELECT a.id, a.client_id, a.balance, c.id, c.name, c.email FROM accounts a INNER JOIN clients c ON a.client_id = c.id WHERE a.id = ?")
 	if err != nil {
 		return nil, err
 	}
@@ -33,11 +33,9 @@ func (a *AccountDB) Find(id string) (*entity.Account, error) {
 		&account.ID,
 		&account.Client.ID,
 		&account.Balance,
-		&account.CreatedAt,
 		&client.ID,
 		&client.Name,
-		&client.Email,
-		&client.CreatedAt)
+		&client.Email)
 	if err != nil {
 		return nil, err
 	}

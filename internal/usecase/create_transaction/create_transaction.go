@@ -7,9 +7,9 @@ import (
 )
 
 type CreateTransactionInputDTO struct {
-	AccountIDFrom string
-	AccountIDTo   string
-	Amount        float64
+	AccountIDFrom string  `json:"account_id_from"`
+	AccountIDTo   string  `json:"account_id_to"`
+	Amount        float64 `json:"amount"`
 }
 
 type CreateTransactionOutputDTO struct {
@@ -53,7 +53,6 @@ func (u *CreateTransactionUseCase) Execute(input CreateTransactionInputDTO) (*Cr
 		return nil, err
 	}
 	output := &CreateTransactionOutputDTO{ID: transaction.ID}
-	u.TransactionCreated.GetPayload()
 	u.EventDispatcher.Dispatch(u.TransactionCreated)
 
 	return output, nil
