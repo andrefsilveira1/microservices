@@ -48,10 +48,16 @@ func (u *CreateTransactionUseCase) Execute(input CreateTransactionInputDTO) (*Cr
 		return nil, err
 	}
 
+	err = u.AccountGateway.UpdateBalance(accountFrom)
+	if err != nil {
+		return nil, err
+	}
+
 	err = u.TransactionGateway.Create(transaction)
 	if err != nil {
 		return nil, err
 	}
+
 	output := &CreateTransactionOutputDTO{ID: transaction.ID}
 	u.EventDispatcher.Dispatch(u.TransactionCreated)
 
