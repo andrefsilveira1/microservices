@@ -18,7 +18,7 @@ func NewClientDb(db *sql.DB) *ClientDB {
 
 func (c *ClientDB) Get(id string) (*entity.Client, error) {
 	client := &entity.Client{}
-	stmt, err := c.DB.Prepare("SELECT id, name, email, create_at FROM clients WHERE id = ?")
+	stmt, err := c.DB.Prepare("SELECT id, name, email, created_at FROM clients WHERE id = ?")
 	if err != nil {
 		return nil, err
 	}
