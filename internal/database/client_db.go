@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+	"time"
 
 	"github.com/andrefsilveira1/microservices/internal/entity"
 )
@@ -18,16 +20,25 @@ func NewClientDb(db *sql.DB) *ClientDB {
 
 func (c *ClientDB) Get(id string) (*entity.Client, error) {
 	client := &entity.Client{}
-	stmt, err := c.DB.Prepare("SELECT id, name, email, created_at FROM clients WHERE id = ?")
+	stmt, err := c.DB.Prepare("SELECT id, name, email, DATE_FORMAT(created_at, '%Y-%m-%d') FROM clients WHERE id = ?")
 	if err != nil {
 		return nil, err
 	}
-
 	defer stmt.Close()
+
+	var createdAtStr string
+
 	row := stmt.QueryRow(id)
-	if err := row.Scan(&client.ID, &client.Name, &client.Email, &client.CreatedAt); err != nil {
+	if err := row.Scan(&client.ID, &client.Name, &client.Email, &createdAtStr); err != nil {
 		return nil, err
 	}
+
+	createdAt, err := time.Parse("2006-01-02", createdAtStr)
+	if err != nil {
+		fmt.Println("Error parsing date:", err)
+		return nil, err
+	}
+	client.CreatedAt = createdAt
 
 	return client, nil
 }
