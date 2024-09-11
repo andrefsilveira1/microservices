@@ -1,11 +1,13 @@
 package createtransaction
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"github.com/andrefsilveira1/microservices/internal/entity"
 	"github.com/andrefsilveira1/microservices/internal/event"
+	"github.com/andrefsilveira1/microservices/internal/usecase/mocks"
 	"github.com/andrefsilveira1/microservices/pkg/events"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -48,12 +50,8 @@ func TestCreateTransactionuseCase(t *testing.T) {
 	account2 := entity.NewAccount(client2)
 	account2.Credit(1000)
 
-	mockAccount := &AccountGatewayMock{}
-	mockAccount.On("Find", account1.ID).Return(account1, nil)
-	mockAccount.On("Find", account2.ID).Return(account2, nil)
-
-	mockTransaction := &TransactionGatewayMock{}
-	mockTransaction.On("Create", mock.Anything).Return(nil)
+	mockUow := &mocks.UowMock{}
+	mockUow.On("Do", mock.Anything, mock.Anything).Return(nil)
 
 	inputDto := CreateTransactionInputDTO{
 		AccountIDFrom: account1.ID,
@@ -64,13 +62,13 @@ func TestCreateTransactionuseCase(t *testing.T) {
 	dispatcher := events.NewEventDispatcher()
 	event := event.NewTransactionCreated()
 
-	usecase := NewCreateTransactionUseCase(mockTransaction, mockAccount, dispatcher, event)
+	ctx := context.Background()
 
-	output, err := usecase.Execute(inputDto)
+	usecase := NewCreateTransactionUseCase(mockUow, dispatcher, event)
+
+	output, err := usecase.Execute(ctx, inputDto)
 	assert.Nil(t, err)
 	assert.NotNil(t, output)
-	mockAccount.AssertExpectations(t)
-	mockTransaction.AssertExpectations(t)
-	mockAccount.AssertNumberOfCalls(t, "Find", 2)
-	mockTransaction.AssertNumberOfCalls(t, "Create", 1)
+	mockUow.AssertExpectations(t)
+	mockUow.AssertNumberOfCalls(t, "Do", 1)
 }

@@ -24,15 +24,13 @@ type CreateTransactionOutputDTO struct {
 
 type CreateTransactionUseCase struct {
 	Uow                uow.UowInterface
-	AccountGateway     gateway.AccountGateway
 	EventDispatcher    events.EventDispatcherInterface
 	TransactionCreated events.EventInterface
 }
 
-func NewCreateTransactionUseCase(Uow uow.UowInterface, accountGateway gateway.AccountGateway, eventDispatcher events.EventDispatcherInterface, transactionCreated events.EventInterface) *CreateTransactionUseCase {
+func NewCreateTransactionUseCase(Uow uow.UowInterface, eventDispatcher events.EventDispatcherInterface, transactionCreated events.EventInterface) *CreateTransactionUseCase {
 	return &CreateTransactionUseCase{
 		Uow:                Uow,
-		AccountGateway:     accountGateway,
 		EventDispatcher:    eventDispatcher,
 		TransactionCreated: transactionCreated,
 	}
