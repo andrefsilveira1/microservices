@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -14,6 +15,7 @@ import (
 	"github.com/andrefsilveira1/microservices/internal/web"
 	"github.com/andrefsilveira1/microservices/internal/web/server"
 	"github.com/andrefsilveira1/microservices/pkg/events"
+	"github.com/andrefsilveira1/microservices/pkg/uow"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 )
@@ -42,16 +44,26 @@ func main() {
 	defer db.Close()
 
 	eventDispatcher := events.NewEventDispatcher()
-	// eventDispatcher.Register("TransactionCreated", handler)
 	transactionCreatedEvent := event.NewTransactionCreated()
+	// eventDispatcher.Register("TransactionCreated", handler)
 
 	clientDb := database.NewClientDb(db)
 	accountDb := database.NewAccountDB(db)
-	transactionDb := database.NewTransactionDB(db)
+
+	ctx := context.Background()
+	uow := uow.NewUow(ctx, db)
+
+	uow.Register("AccountDB", func(tx *sql.Tx) interface{} {
+		return database.NewAccountDB(db)
+	})
+
+	uow.Register("TransactionDB", func(tx *sql.Tx) interface{} {
+		return database.NewTransactionDB(db)
+	})
 
 	createClientUseCase := createclient.NewCreateClientUseCase(clientDb)
 	createAccountUseCase := createaccount.NewCreateAccountUseCase(accountDb, clientDb)
-	createTransacstionUseCase := createtransaction.NewCreateTransactionUseCase(transactionDb, accountDb, eventDispatcher, transactionCreatedEvent)
+	createTransacstionUseCase := createtransaction.NewCreateTransactionUseCase(uow, eventDispatcher, transactionCreatedEvent)
 
 	server := server.NewServer(":3000")
 
