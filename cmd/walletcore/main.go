@@ -47,7 +47,7 @@ func main() {
 	defer db.Close()
 
 	configMap := ckafka.ConfigMap{
-		"bootstrap.servers": "kafka:9094",
+		"bootstrap.servers": "localhost:9092",
 		"group.id":          "wallet",
 	}
 
@@ -56,7 +56,6 @@ func main() {
 	eventDispatcher := events.NewEventDispatcher()
 	transactionCreatedEvent := event.NewTransactionCreated()
 	eventDispatcher.Register("TransactionCreated", handler.NewTransactionCreatedKafkaHandler(kafkProducer))
-	// eventDispatcher.Register("TransactionCreated", handler)
 
 	clientDb := database.NewClientDb(db)
 	accountDb := database.NewAccountDB(db)
@@ -76,7 +75,7 @@ func main() {
 	createAccountUseCase := createaccount.NewCreateAccountUseCase(accountDb, clientDb)
 	createTransacstionUseCase := createtransaction.NewCreateTransactionUseCase(uow, eventDispatcher, transactionCreatedEvent)
 
-	server := server.NewServer(":3000")
+	server := server.NewServer(":8080")
 
 	clientHandler := web.NewWebClientHandler(*createClientUseCase)
 	accountHandler := web.NewWebAccountHandler(*createAccountUseCase)
