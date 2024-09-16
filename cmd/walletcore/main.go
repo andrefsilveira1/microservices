@@ -9,13 +9,16 @@ import (
 
 	"github.com/andrefsilveira1/microservices/internal/database"
 	"github.com/andrefsilveira1/microservices/internal/event"
+	"github.com/andrefsilveira1/microservices/internal/event/handler"
 	createaccount "github.com/andrefsilveira1/microservices/internal/usecase/create_account"
 	createclient "github.com/andrefsilveira1/microservices/internal/usecase/create_client"
 	createtransaction "github.com/andrefsilveira1/microservices/internal/usecase/create_transaction"
 	"github.com/andrefsilveira1/microservices/internal/web"
 	"github.com/andrefsilveira1/microservices/internal/web/server"
 	"github.com/andrefsilveira1/microservices/pkg/events"
+	"github.com/andrefsilveira1/microservices/pkg/kafka"
 	"github.com/andrefsilveira1/microservices/pkg/uow"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 )
@@ -43,8 +46,16 @@ func main() {
 
 	defer db.Close()
 
+	configMap := ckafka.ConfigMap{
+		"bootstrap.servers": "kafka:9094",
+		"group.id":          "wallet",
+	}
+
+	kafkProducer := kafka.NewKafkaProducer(&configMap)
+
 	eventDispatcher := events.NewEventDispatcher()
 	transactionCreatedEvent := event.NewTransactionCreated()
+	eventDispatcher.Register("TransactionCreated", handler.NewTransactionCreatedKafkaHandler(kafkProducer))
 	// eventDispatcher.Register("TransactionCreated", handler)
 
 	clientDb := database.NewClientDb(db)
