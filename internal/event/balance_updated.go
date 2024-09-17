@@ -25,6 +25,6 @@ func (e *BalanceUpdated) SetPayload(payload interface{}) {
 	e.Payload = payload
 }
 
-func (e *BalanceUpdated) GetTime() time.Time {
+func (e *BalanceUpdated) GetDate() time.Time {
 	return time.Now()
 }

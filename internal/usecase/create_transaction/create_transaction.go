@@ -26,18 +26,28 @@ type CreateTransactionUseCase struct {
 	Uow                uow.UowInterface
 	EventDispatcher    events.EventDispatcherInterface
 	TransactionCreated events.EventInterface
+	BalanceUpdated     events.EventInterface
 }
 
-func NewCreateTransactionUseCase(Uow uow.UowInterface, eventDispatcher events.EventDispatcherInterface, transactionCreated events.EventInterface) *CreateTransactionUseCase {
+type BalanceUpdatedOutputDTO struct {
+	AccountIDFrom        string  `json:"account_id_from"`
+	AccountIDTo          string  `json:"account_id_to"`
+	BalanceAccountIDFrom float64 `json:"balance_account_id_from"`
+	BalanceAccountIDTo   float64 `json:"balance_account_id_to"`
+}
+
+func NewCreateTransactionUseCase(Uow uow.UowInterface, eventDispatcher events.EventDispatcherInterface, transactionCreated events.EventInterface, balanceUpdated events.EventInterface) *CreateTransactionUseCase {
 	return &CreateTransactionUseCase{
 		Uow:                Uow,
 		EventDispatcher:    eventDispatcher,
 		TransactionCreated: transactionCreated,
+		BalanceUpdated:     balanceUpdated,
 	}
 }
 
 func (u *CreateTransactionUseCase) Execute(ctx context.Context, input CreateTransactionInputDTO) (*CreateTransactionOutputDTO, error) {
 	output := &CreateTransactionOutputDTO{}
+	balanceUpdatedOutput := &BalanceUpdatedOutputDTO{}
 	err := u.Uow.Do(ctx, func(_ *uow.Uow) error {
 		accountRepository := u.getAccountRepository(ctx)
 		transactionRepository := u.getTransactionRepository(ctx)
@@ -71,7 +81,10 @@ func (u *CreateTransactionUseCase) Execute(ctx context.Context, input CreateTran
 		output.AccountIDFrom = input.AccountIDFrom
 		output.AccountIDTo = input.AccountIDTo
 		output.Amount = input.Amount
-
+		balanceUpdatedOutput.AccountIDFrom = input.AccountIDFrom
+		balanceUpdatedOutput.AccountIDTo = input.AccountIDTo
+		balanceUpdatedOutput.BalanceAccountIDFrom = accountFrom.Balance
+		balanceUpdatedOutput.BalanceAccountIDTo = accountTo.Balance
 		return nil
 
 	})
@@ -81,6 +94,9 @@ func (u *CreateTransactionUseCase) Execute(ctx context.Context, input CreateTran
 	}
 	u.TransactionCreated.SetPayload(output)
 	u.EventDispatcher.Dispatch(u.TransactionCreated)
+
+	u.BalanceUpdated.SetPayload(balanceUpdatedOutput)
+	u.EventDispatcher.Dispatch(u.BalanceUpdated)
 
 	return output, nil
 }
