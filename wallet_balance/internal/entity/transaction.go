@@ -5,9 +5,9 @@ import (
 )
 
 type Transaction struct {
-	ID          string
-	AccountFrom *string
-	AccountTo   *string
-	Amount      float64
-	CreatedAt   time.Time
+	ID            string
+	AccountIDFrom *string
+	AccountIDTo   *string
+	Amount        float64
+	CreatedAt     time.Time
 }
