@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/entity"
+	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/mocks"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/events"
 	"github.com/stretchr/testify/assert"
@@ -31,6 +32,7 @@ func TestFindTransactionUseCase(t *testing.T) {
 
 	mockUow := &mocks.UowMock{}
 	mockUow.On("Do", mock.Anything, mock.Anything).Return(nil)
+
 	dispatcher := events.NewEventDispatcher()
 	eventTransaction := event.NewTransactionFound()
 	ctx := context.Background()
