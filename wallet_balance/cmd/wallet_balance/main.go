@@ -8,9 +8,7 @@ import (
 	"os"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database"
-	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event/handler"
-	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/events"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/kafka"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/uow"
@@ -48,7 +46,7 @@ func main() {
 	kafkaProducer := kafka.NewKafkaProducer(&configMap)
 	eventDispatcher := events.NewEventDispatcher()
 	eventDispatcher.Register("TransactionFound", handler.NewTransactionFoundKafkaHandler(kafkaProducer))
-	eventFoundEvent := event.NewTransactionFound()
+	// eventFoundEvent := event.NewTransactionFound()
 
 	ctx := context.Background()
 	uow := uow.NewUow(ctx, db)
@@ -57,12 +55,12 @@ func main() {
 		return database.NewTransactionDB(db)
 	})
 
-	findTransactionUseCase := gettransaction.NewFindTransactionUseCase(uow, eventDispatcher, eventFoundEvent)
+	// findTransactionUseCase := gettransaction.NewFindTransactionUseCase(uow, eventDispatcher, eventFoundEvent)
 
-	server := server.NewServer(":8000")
+	// server := server.NewServer(":8000")
 
-	transactionHandler := web.NewWebTransactionHandler(*findTransactionUseCase)
-	server.AddHandler("/transactions", transactionHandler.FindTransaction)
+	// transactionHandler := web.NewWebTransactionHandler(*findTransactionUseCase)
+	// server.AddHandler("/transactions", transactionHandler.FindTransaction)
 
-	server.Start()
+	// server.Start()
 }

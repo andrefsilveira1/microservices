@@ -44,8 +44,8 @@ func (u *FindTransactionUseCase) Execute(ctx context.Context, input FindTransact
 		if err != nil {
 			return err
 		}
-		output.AccountIDFrom = transaction.AccountIDFrom
-		output.AccountIDTo = transaction.AccountIDTo
+		output.AccountIDFrom = &transaction.AccountIDFrom
+		output.AccountIDTo = &transaction.AccountIDTo
 		output.Amount = transaction.Amount
 		output.CreatedAt = transaction.CreatedAt
 		return nil
