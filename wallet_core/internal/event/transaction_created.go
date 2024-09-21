@@ -18,7 +18,7 @@ func (c *TransactionCreated) GetName() string {
 }
 
 func (c *TransactionCreated) GetPayload() interface{} {
-	return c.GetPayload()
+	return c.Payload
 }
 
 func (e *TransactionCreated) SetPayload(payload interface{}) {
