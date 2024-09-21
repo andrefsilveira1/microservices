@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event/handler"
 	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
@@ -49,7 +50,6 @@ func main() {
 	eventDispatcher.Register("TransactionFound", handler.NewTransactionFoundKafkaHandler(kafkaProducer))
 	eventFoundEvent := event.NewTransactionFound()
 
-	accountDb := database.NewAccountDB(db)
 	ctx := context.Background()
 	uow := uow.NewUow(ctx, db)
 
