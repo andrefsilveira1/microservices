@@ -1,6 +1,6 @@
 module github.com/andrefsilveira1/microservices/wallet_balance
 
-go 1.22.2
+go 1.20
 
 require (
 	github.com/confluentinc/confluent-kafka-go v1.9.2
