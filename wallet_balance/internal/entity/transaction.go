@@ -24,5 +24,4 @@ func NewTransaction(account_id_from string, account_id_to string, amount float64
 	}
 
 	return transaction, nil
-	// Implement validate later
 }
