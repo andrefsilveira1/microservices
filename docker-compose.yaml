@@ -1,25 +1,64 @@
-version: '3'
+version: '3.8'
 
 services:
-  goapp: 
-    build: .
+  wallet_core: 
+    build:
+      context: ./wallet_core
+    container_name: wallet_core
     platform: linux/amd64
     volumes:
-      - .:/app
+      - ./wallet_core:/app
+    environment:
+      DATABASE_URL: "root:root@tcp(wallet_core_db:3306)/wallet_core_db"
+      KAFKA_BROKER: kafka:29092
     ports:
-      - 3000:3000
+      - 8080:8080
+    depends_on:
+      - wallet_core_db
+      - kafka
 
-  mysql:
+  wallet_core_db:
     image: mysql:5.7
     platform: linux/amd64
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: wallet
+      MYSQL_DATABASE: wallet_core_db
+      MYSQL_USER: root
       MYSQL_PASSWORD: root
     ports:
       - 3306:3306
     volumes:
-      - .docker/mysql:/var/lib/mysql
+      - ./.docker/wallet_core_db:/var/lib/mysql
+
+  wallet_balance: 
+    build:
+      context: ./wallet_balance
+    container_name: wallet_balance
+    platform: linux/amd64
+    volumes:
+      - ./wallet_balance:/app
+    environment:
+      DATABASE_URL: "root:root@tcp(wallet_balance_db:3306)/wallet_balance_db"
+      KAFKA_BROKER: kafka:29092
+      KAFKA_TOPIC: transaction_topic 
+    ports:
+      - 8000:8000
+    depends_on:
+      - wallet_balance_db
+      - kafka
+
+  wallet_balance_db:
+    image: mysql:5.7
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wallet_balance_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    ports:
+      - 3307:3306
+    volumes:
+      - ./.docker/wallet_balance_db:/var/lib/mysql
 
   zookeeper:
     image: "confluentinc/cp-zookeeper:6.1.0"
@@ -37,9 +76,6 @@ services:
     depends_on:
       - zookeeper
     ports:
-    # Exposes 9092 for external connections to the broker
-    # Use kafka:29092 for connections internal on the docker network
-    # See https://rmoff.net/2018/08/02/kafka-listeners-explained/ for details
       - '9092:9092'
     environment:
       TZ: Sao_Paulo/Brazil
