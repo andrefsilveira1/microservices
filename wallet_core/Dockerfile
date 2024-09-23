@@ -10,7 +10,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o wallet_core ./cmd/main.go
+RUN go build -o wallet_core ./cmd/wallet_core/main.go
 
 EXPOSE 8080
 

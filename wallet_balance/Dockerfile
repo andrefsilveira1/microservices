@@ -10,7 +10,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o wallet_balance ./cmd/main.go
+RUN go build -o wallet_balance ./cmd/wallet_balance/main.go
 
 EXPOSE 8000
 
