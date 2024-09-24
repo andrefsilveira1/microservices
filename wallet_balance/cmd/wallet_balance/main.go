@@ -17,14 +17,9 @@ import (
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/kafka"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/uow"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	username := os.Getenv("DB_USERNAME")
 	password := os.Getenv("DB_PASSWORD")
