@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/andrefsilveira1/microservices/internal/database"
+	"github.com/andrefsilveira1/microservices/internal/database/seed"
 	"github.com/andrefsilveira1/microservices/internal/event"
 	"github.com/andrefsilveira1/microservices/internal/event/handler"
 	createaccount "github.com/andrefsilveira1/microservices/internal/usecase/create_account"
@@ -39,6 +40,7 @@ func main() {
 	}
 
 	defer db.Close()
+	seed.CreateTables(db)
 
 	configMap := ckafka.ConfigMap{
 		"bootstrap.servers": "localhost:9092",

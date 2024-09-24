@@ -14,9 +14,10 @@ RUN go build -o /app/wallet_balance ./cmd/wallet_balance/main.go
 
 EXPOSE 8000
 
-ENV MYSQL_ROOT_PASSWORD="root"
-ENV MYSQL_DATABASE="wallet_balance_db"
-ENV MYSQL_USER="root"
-ENV MYSQL_PASSWORD="root"
+ENV DB_USERNAME="root"
+ENV DB_PASSWORD="root"
+ENV DB_HOST="localhost"
+ENV DB_PORT="3307"
+ENV DB_NAME="wallet_balance_db"
 
 CMD ["/app/wallet_balance"]
