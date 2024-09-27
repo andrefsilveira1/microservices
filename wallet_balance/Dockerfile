@@ -10,14 +10,11 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /app/wallet_balance ./cmd/wallet_balance/main.go
-
-EXPOSE 8000
-
 ENV DB_USERNAME="root"
 ENV DB_PASSWORD="root"
-ENV DB_HOST="localhost"
-ENV DB_PORT="3307"
+ENV DB_HOST="wallet_balance_db"
+ENV DB_PORT="3306"
 ENV DB_NAME="wallet_balance_db"
 
-CMD ["/app/wallet_balance"]
+CMD ["go", "run", "./cmd/wallet_balance/main.go"]
+
