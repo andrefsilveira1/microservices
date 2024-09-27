@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database"
+	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database/seed"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event/handler"
 	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
@@ -17,6 +18,7 @@ import (
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/kafka"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/uow"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
@@ -36,6 +38,7 @@ func main() {
 	}
 
 	defer db.Close()
+	seed.CreateTables(db)
 
 	configMap := ckafka.ConfigMap{
 		"bootstrap.servers": "localhost:9092",

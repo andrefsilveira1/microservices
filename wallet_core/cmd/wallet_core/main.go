@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/andrefsilveira1/microservices/internal/database"
 	"github.com/andrefsilveira1/microservices/internal/database/seed"
@@ -30,10 +31,9 @@ func main() {
 	port := os.Getenv("DB_PORT")
 	dbname := os.Getenv("DB_NAME")
 
-	// Create the connection string
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, hostname, port, dbname)
-
-	// Open the database connection
+	fmt.Println("DSN CONNECTED ===>", dsn)
+	time.Sleep(5 * time.Second)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal("Error opening database: ", err)
