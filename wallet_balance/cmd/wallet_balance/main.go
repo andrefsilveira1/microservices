@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database/seed"
+	"github.com/andrefsilveira1/microservices/wallet_balance/internal/entity"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event/handler"
 	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
@@ -45,6 +47,18 @@ func main() {
 		"group.id":          "wallet",
 	}
 
+	consumer, err := ckafka.NewConsumer(&configMap)
+	if err != nil {
+		log.Fatalf("Error until kafka consumer creating %s", err)
+	}
+
+	defer consumer.Close()
+
+	err = consumer.Subscribe("transactions", nil)
+	if err != nil {
+		log.Fatalf("Error subscribing to Kafka topic: %s", err)
+	}
+
 	kafkaProducer := kafka.NewKafkaProducer(&configMap)
 	eventDispatcher := events.NewEventDispatcher()
 	eventDispatcher.Register("TransactionFound", handler.NewTransactionFoundKafkaHandler(kafkaProducer))
@@ -63,6 +77,23 @@ func main() {
 
 	transactionHandler := web.NewWebTransactionHandler(*findTransactionUseCase)
 	server.AddHandler("/transactions", transactionHandler.FindTransaction)
+
+	go func() {
+		for {
+			msg, err := consumer.ReadMessage(-1)
+			if err != nil {
+				log.Printf("Transaction received: %s \n", string(msg.Value))
+				var payload entity.Transaction
+				if err := json.Unmarshal(msg.Value, &payload); err != nil {
+					log.Printf("Error unmarshal kafka message: %v", err)
+					continue
+				}
+				//save here
+			} else {
+				log.Printf("Error: %v (%v) \n", err, msg)
+			}
+		}
+	}()
 
 	server.Start()
 }
