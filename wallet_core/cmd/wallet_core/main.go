@@ -32,7 +32,6 @@ func main() {
 	dbname := os.Getenv("DB_NAME")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, hostname, port, dbname)
-	fmt.Println("DSN CONNECTED ===>", dsn)
 	time.Sleep(5 * time.Second)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -43,7 +42,7 @@ func main() {
 	seed.CreateTables(db)
 
 	configMap := ckafka.ConfigMap{
-		"bootstrap.servers": "localhost:9092",
+		"bootstrap.servers": "kafka:29092",
 		"group.id":          "wallet",
 	}
 
