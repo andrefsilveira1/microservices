@@ -2,7 +2,6 @@ package gettransaction
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/gateway"
@@ -38,7 +37,6 @@ func NewFindTransactionUseCase(uow uow.UowInterface, eventDispatcher events.Even
 
 func (u *FindTransactionUseCase) Execute(ctx context.Context, input FindTransactionInputDTO) (*FindTransactionOutputDTO, error) {
 	output := &FindTransactionOutputDTO{}
-	fmt.Println("EXECUTE ERROR output ===>", output)
 	err := u.Uow.Do(ctx, func(_ *uow.Uow) error {
 		transactionRepository := u.getTransactionRepository(ctx)
 
@@ -53,14 +51,12 @@ func (u *FindTransactionUseCase) Execute(ctx context.Context, input FindTransact
 		return nil
 	})
 
-	fmt.Println("EXECUTE ERROR Uow ===>", err)
 	if err != nil {
 		return nil, err
 	}
 
 	u.TransactionFound.SetPayload(output)
 	u.EventDispatcher.Dispatch(u.TransactionFound)
-	fmt.Println("return ERROR output ===>", output)
 
 	return output, nil
 }
