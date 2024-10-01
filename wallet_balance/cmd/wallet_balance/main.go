@@ -10,10 +10,10 @@ import (
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database/seed"
-	"github.com/andrefsilveira1/microservices/wallet_balance/internal/entity"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event/handler"
 	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
+	registertransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/register_transaction"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/web"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/web/server"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/events"
@@ -63,6 +63,7 @@ func main() {
 	eventDispatcher := events.NewEventDispatcher()
 	eventDispatcher.Register("TransactionFound", handler.NewTransactionFoundKafkaHandler(kafkaProducer))
 	eventFoundEvent := event.NewTransactionFound()
+	eventRegistered := event.NewTransactionRegistered()
 
 	ctx := context.Background()
 	uow := uow.NewUow(ctx, db)
@@ -72,7 +73,7 @@ func main() {
 	})
 
 	findTransactionUseCase := gettransaction.NewFindTransactionUseCase(uow, eventDispatcher, eventFoundEvent)
-
+	registerTransactionUseCase := registertransaction.NewRegisterTransactionUseCase(uow, eventDispatcher, eventRegistered)
 	server := server.NewServer(":8000")
 
 	transactionHandler := web.NewWebTransactionHandler(*findTransactionUseCase)
@@ -81,16 +82,24 @@ func main() {
 	go func() {
 		for {
 			msg, err := consumer.ReadMessage(-1)
-			if err != nil {
+			if err == nil {
 				log.Printf("Transaction received: %s \n", string(msg.Value))
-				var payload entity.Transaction
+
+				var payload registertransaction.RegisterTransactionInputDTO
 				if err := json.Unmarshal(msg.Value, &payload); err != nil {
-					log.Printf("Error unmarshal kafka message: %v", err)
+					log.Printf("Error unmarshalling Kafka message: %v", err)
 					continue
 				}
-				//save here
+
+				log.Printf("Processing payload: %+v", payload)
+				output, err := registerTransactionUseCase.Execute(ctx, payload)
+				if err != nil {
+					log.Printf("Error executing register transaction use case: %v", err)
+				} else {
+					log.Printf("Transaction successfully processed, Output ID: %s", output.ID)
+				}
 			} else {
-				log.Printf("Error: %v (%v) \n", err, msg)
+				log.Printf("Error reading message from Kafka: %v", err)
 			}
 		}
 	}()
