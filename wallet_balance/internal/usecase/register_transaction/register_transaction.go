@@ -13,15 +13,15 @@ import (
 
 type RegisterTransactionInputDTO struct {
 	ID            string  `json:"id"`
-	AccountIDFrom *string `json:"account_id_from"`
-	AccountIDTo   *string `json:"account_id_to"`
+	AccountIDFrom string  `json:"account_id_from"`
+	AccountIDTo   string  `json:"account_id_to"`
 	Amount        float64 `json:"amount"`
 }
 
 type RegisterTransactionOutputDTO struct {
 	ID            string    `json:"id"`
-	AccountIDFrom *string   `json:"account_id_from"`
-	AccountIDTo   *string   `json:"account_id_to"`
+	AccountIDFrom string    `json:"account_id_from"`
+	AccountIDTo   string    `json:"account_id_to"`
 	Amount        float64   `json:"amount"`
 	CreatedAt     time.Time `json:"created_at"`
 }
@@ -44,18 +44,18 @@ func (u *RegisterTransactionUseCase) Execute(ctx context.Context, input Register
 	output := &RegisterTransactionOutputDTO{}
 	err := u.Uow.Do(ctx, func(_ *uow.Uow) error {
 		transactionRepository := u.getTransactionRepository(ctx)
-		transaction, err := entity.NewTransaction(*input.AccountIDFrom, *input.AccountIDTo, input.Amount)
+		transaction, err := entity.NewTransaction(input.AccountIDFrom, input.AccountIDTo, input.Amount)
 		if err != nil {
 			log.Printf("Fatal error until transaction creation")
 		}
 
 		err = transactionRepository.Register(transaction)
 		if err != nil {
-			log.Fatal("Error until register new transaction")
+			log.Fatal("Error until register new transaction", err)
 		}
 		output.ID = transaction.ID
-		output.AccountIDFrom = &transaction.AccountIDFrom
-		output.AccountIDTo = &transaction.AccountIDTo
+		output.AccountIDFrom = transaction.AccountIDFrom
+		output.AccountIDTo = transaction.AccountIDTo
 		output.Amount = transaction.Amount
 		output.CreatedAt = transaction.CreatedAt
 		return nil

@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/entity"
 )
@@ -17,12 +18,17 @@ func NewTransactionDB(db *sql.DB) *TransactionDB {
 }
 
 func (t *TransactionDB) Register(transasction *entity.Transaction) error {
-	stmt, err := t.DB.Prepare("INSERT INTO transactions_balance (id, account_id_from, account_id_to, amount, created_at) ? VALUES (?,?,?,?,?)")
+	fmt.Println("TRANSACTIONS RECEIVED ===>", transasction.AccountIDFrom)
+	fmt.Println("TRANSACTIONS RECEIVED ===>", transasction.AccountIDTo)
+	fmt.Println("TRANSACTIONS RECEIVED ===>", transasction.Amount)
+	stmt, err := t.DB.Prepare("INSERT INTO transactions_balance (id, account_id_from, account_id_to, amount, created_at) VALUES (?,?,?,?,?)")
+
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("REGISTER ===>", err)
 	defer stmt.Close()
+
 	_, err = stmt.Exec(transasction.ID, transasction.AccountIDFrom, transasction.AccountIDTo, transasction.Amount, transasction.CreatedAt)
 	if err != nil {
 		return err
@@ -33,6 +39,7 @@ func (t *TransactionDB) Register(transasction *entity.Transaction) error {
 
 func (t *TransactionDB) Find(id string) (*entity.Transaction, error) {
 	transaction := &entity.Transaction{}
+	fmt.Println("ID FIND ===>", id)
 	stmt, err := t.DB.Prepare("SELECT id, account_id_from, account_id_to, amount, created_at from transactions_balance WHERE id = ?")
 	if err != nil {
 		return nil, err
@@ -47,6 +54,11 @@ func (t *TransactionDB) Find(id string) (*entity.Transaction, error) {
 		&transaction.Amount,
 		&transaction.CreatedAt,
 	)
+
+	fmt.Println("transaction transaction ===>", transaction.Amount)
+	fmt.Println("transaction transaction ===>", transaction.AccountIDFrom)
+	fmt.Println("transaction transaction ===>", transaction.AccountIDTo)
+
 	if err != nil {
 		return nil, err
 	}
