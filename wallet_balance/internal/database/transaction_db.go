@@ -16,8 +16,8 @@ func NewTransactionDB(db *sql.DB) *TransactionDB {
 	}
 }
 
-func (t *TransactionDB) Save(transasction *entity.Transaction) error {
-	stmt, err := t.DB.Prepare("INSERT INTO transactions (id, account_id_from, account_id_to, amount, created_at) ? VALUES (?,?,?,?,?)")
+func (t *TransactionDB) Register(transasction *entity.Transaction) error {
+	stmt, err := t.DB.Prepare("INSERT INTO transactions_balance (id, account_id_from, account_id_to, amount, created_at) ? VALUES (?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (t *TransactionDB) Save(transasction *entity.Transaction) error {
 
 func (t *TransactionDB) Find(id string) (*entity.Transaction, error) {
 	transaction := &entity.Transaction{}
-	stmt, err := t.DB.Prepare("SELECT id, account_id_from, account_id_to, amount, created_at from transactions WHERE id = ?")
+	stmt, err := t.DB.Prepare("SELECT id, account_id_from, account_id_to, amount, created_at from transactions_balance WHERE id = ?")
 	if err != nil {
 		return nil, err
 	}
