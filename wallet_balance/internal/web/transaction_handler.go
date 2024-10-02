@@ -2,7 +2,6 @@ package web
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
@@ -26,11 +25,8 @@ func (h *TransactionHandler) FindTransaction(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	fmt.Println("DTO INPUT ===>", dto)
-
 	ctx := r.Context()
 	output, err := h.FindTransactionUseCase.Execute(ctx, dto)
-	fmt.Println("OUTPUT ===>", output)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

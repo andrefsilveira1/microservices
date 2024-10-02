@@ -20,7 +20,7 @@ func CreateTables(db *sql.DB) {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS accounts (
 		id VARCHAR(255) PRIMARY KEY,
 		client_id VARCHAR(255),
-		balance INT,
+		balance DECIMAL(10, 2),
 		created_at DATE
 	)`)
 	if err != nil {
