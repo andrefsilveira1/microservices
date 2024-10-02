@@ -2,6 +2,7 @@ package registertransaction
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,8 +12,13 @@ import (
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/uow"
 )
 
+type KafkaMessage struct {
+	Name    string                      `json:"Name"`
+	Payload RegisterTransactionInputDTO `json:"Payload"`
+}
+
 type RegisterTransactionInputDTO struct {
-	ID            string  `json:"id"`
+	ID            string  `json:"ID"`
 	AccountIDFrom string  `json:"account_id_from"`
 	AccountIDTo   string  `json:"account_id_to"`
 	Amount        float64 `json:"amount"`
@@ -44,6 +50,9 @@ func (u *RegisterTransactionUseCase) Execute(ctx context.Context, input Register
 	output := &RegisterTransactionOutputDTO{}
 	err := u.Uow.Do(ctx, func(_ *uow.Uow) error {
 		transactionRepository := u.getTransactionRepository(ctx)
+		fmt.Println("INPUT ===> ", input.AccountIDFrom)
+		fmt.Println("INPUT ===> ", input.AccountIDTo)
+		fmt.Println("INPUT ===> ", input.Amount)
 		transaction, err := entity.NewTransaction(input.AccountIDFrom, input.AccountIDTo, input.Amount)
 		if err != nil {
 			log.Printf("Fatal error until transaction creation")

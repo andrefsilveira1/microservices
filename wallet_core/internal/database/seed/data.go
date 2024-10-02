@@ -26,3 +26,22 @@ func InsertFakeData(db *sql.DB) {
 		log.Printf("Error inserting fake data into transactions: %v", err)
 	}
 }
+
+func DropTables(db *sql.DB) {
+	_, err := db.Exec("DROP TABLE IF EXISTS transactions")
+	if err != nil {
+		log.Printf("Error dropping transactions table: %v", err)
+	}
+
+	_, err = db.Exec("DROP TABLE IF EXISTS accounts")
+	if err != nil {
+		log.Printf("Error dropping accounts table: %v", err)
+	}
+
+	_, err = db.Exec("DROP TABLE IF EXISTS clients")
+	if err != nil {
+		log.Printf("Error dropping clients table: %v", err)
+	}
+
+	log.Println("All tables dropped successfully.")
+}

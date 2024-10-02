@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/entity"
 )
@@ -18,6 +19,7 @@ func NewTransactionDB(db *sql.DB) *TransactionDB {
 }
 
 func (t *TransactionDB) Register(transasction *entity.Transaction) error {
+	fmt.Println("TRANSACTIONS RECEIVED ===>", transasction.ID)
 	fmt.Println("TRANSACTIONS RECEIVED ===>", transasction.AccountIDFrom)
 	fmt.Println("TRANSACTIONS RECEIVED ===>", transasction.AccountIDTo)
 	fmt.Println("TRANSACTIONS RECEIVED ===>", transasction.Amount)
@@ -63,6 +65,7 @@ func (t *TransactionDB) Find(id string) (*entity.Transaction, error) {
 		return nil, err
 	}
 
+	log.Printf("Transaction found: ID=%s, AccountIDFrom=%s, AccountIDTo=%s, Amount=%f", transaction.ID, transaction.AccountIDFrom, transaction.AccountIDTo, transaction.Amount)
 	return transaction, nil
 
 }
