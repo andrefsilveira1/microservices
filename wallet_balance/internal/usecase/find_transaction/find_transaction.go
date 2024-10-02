@@ -15,8 +15,8 @@ type FindTransactionInputDTO struct {
 
 type FindTransactionOutputDTO struct {
 	ID            string    `json:"id"`
-	AccountIDFrom *string   `json:"account_id_from"`
-	AccountIDTo   *string   `json:"account_id_to"`
+	AccountIDFrom string    `json:"account_id_from"`
+	AccountIDTo   string    `json:"account_id_to"`
 	Amount        float64   `json:"amount"`
 	CreatedAt     time.Time `json:"created_at"`
 }
@@ -41,11 +41,14 @@ func (u *FindTransactionUseCase) Execute(ctx context.Context, input FindTransact
 		transactionRepository := u.getTransactionRepository(ctx)
 
 		transaction, err := transactionRepository.Find(input.ID)
+
 		if err != nil {
 			return err
 		}
-		output.AccountIDFrom = &transaction.AccountIDFrom
-		output.AccountIDTo = &transaction.AccountIDTo
+
+		output.ID = transaction.ID
+		output.AccountIDFrom = transaction.AccountIDFrom
+		output.AccountIDTo = transaction.AccountIDTo
 		output.Amount = transaction.Amount
 		output.CreatedAt = transaction.CreatedAt
 		return nil

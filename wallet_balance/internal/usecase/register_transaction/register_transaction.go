@@ -2,7 +2,6 @@ package registertransaction
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -50,10 +49,7 @@ func (u *RegisterTransactionUseCase) Execute(ctx context.Context, input Register
 	output := &RegisterTransactionOutputDTO{}
 	err := u.Uow.Do(ctx, func(_ *uow.Uow) error {
 		transactionRepository := u.getTransactionRepository(ctx)
-		fmt.Println("INPUT ===> ", input.AccountIDFrom)
-		fmt.Println("INPUT ===> ", input.AccountIDTo)
-		fmt.Println("INPUT ===> ", input.Amount)
-		transaction, err := entity.NewTransaction(input.AccountIDFrom, input.AccountIDTo, input.Amount)
+		transaction, err := entity.NewTransaction(input.ID, input.AccountIDFrom, input.AccountIDTo, input.Amount)
 		if err != nil {
 			log.Printf("Fatal error until transaction creation")
 		}
