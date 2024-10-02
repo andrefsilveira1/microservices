@@ -40,6 +40,7 @@ func main() {
 	}
 
 	defer db.Close()
+	seed.DropTables(db)
 	seed.CreateTables(db)
 
 	configMap := ckafka.ConfigMap{
