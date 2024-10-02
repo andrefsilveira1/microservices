@@ -12,9 +12,10 @@ COPY . .
 
 ENV DB_USERNAME="root"
 ENV DB_PASSWORD="root"
-ENV DB_HOST="wallet_balance_db"
+ENV DB_HOST="wallet_core_db"
 ENV DB_PORT="3306"
-ENV DB_NAME="wallet_balance_db"
+ENV DB_NAME="wallet_core_db"
+
 
 CMD ["go", "run", "./cmd/wallet_balance/main.go"]
 

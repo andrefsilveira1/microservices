@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database"
-	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database/seed"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event/handler"
 	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
@@ -40,8 +39,6 @@ func main() {
 	}
 
 	defer db.Close()
-	seed.DropTables(db)
-	seed.CreateTables(db)
 
 	configMap := ckafka.ConfigMap{
 		"bootstrap.servers": "kafka:29092",
