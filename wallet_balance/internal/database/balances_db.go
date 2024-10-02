@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -33,37 +34,38 @@ func (t *TransactionDB) UpdateBalances(account_id_from string, balanceChange flo
 	return nil
 }
 
-func (t *TransactionDB) FindBalances(id string) (*entity.Transaction, error) {
-	transaction := &entity.Transaction{}
-	stmt, err := t.DB.Prepare("SELECT id, account_id_from, account_id_to, amount, created_at from transactions_balance WHERE id = ?")
-	if err != nil {
-		return nil, err
-	}
+func (t *TransactionDB) FindBalances(accountID string) (*entity.Account, error) {
+	account := &entity.Account{}
 
+	stmt, err := t.DB.Prepare("SELECT id, client_id, balance, created_at FROM accounts WHERE id = ?")
+	if err != nil {
+		return nil, fmt.Errorf("error preparing statement: %v", err)
+	}
 	defer stmt.Close()
-	row := stmt.QueryRow(id)
+
+	row := stmt.QueryRow(accountID)
 	var createdAtRaw []byte
 	err = row.Scan(
-		&transaction.ID,
-		&transaction.AccountIDFrom,
-		&transaction.AccountIDTo,
-		&transaction.Amount,
+		&account.ID,
+		&account.ClientID,
+		&account.Balance,
 		&createdAtRaw,
 	)
 
 	if err != nil {
-		fmt.Println("Error during scan:", err)
-		return nil, err
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("no account found with account_id: %s", accountID)
+		}
+		return nil, fmt.Errorf("error during scan: %v", err)
 	}
 
 	createdAtStr := string(createdAtRaw)
-	transaction.CreatedAt, err = time.Parse("2006-01-02 15:04:05", createdAtStr)
+	account.CreatedAt, err = time.Parse("2006-01-02", createdAtStr) // assuming the format is DATE (YYYY-MM-DD)
 	if err != nil {
 		fmt.Println("Error parsing created_at:", err)
-		return nil, err
+		return nil, fmt.Errorf("error parsing created_at: %v", err)
 	}
 
-	fmt.Println("Transaction found:", transaction)
-	return transaction, nil
-
+	fmt.Println("Account balance found:", account)
+	return account, nil
 }
