@@ -85,12 +85,12 @@ func main() {
 			if err == nil {
 				log.Printf("Transaction received: %s \n", string(msg.Value))
 
-				var payload registertransaction.RegisterTransactionInputDTO
-				if err := json.Unmarshal(msg.Value, &payload); err != nil {
+				var kafkaMsg registertransaction.KafkaMessage
+				if err := json.Unmarshal(msg.Value, &kafkaMsg); err != nil {
 					log.Printf("Error unmarshalling Kafka message: %v", err)
 					continue
 				}
-
+				payload := kafkaMsg.Payload
 				log.Printf("Processing payload: %+v", payload)
 				output, err := registerTransactionUseCase.Execute(ctx, payload)
 				if err != nil {
