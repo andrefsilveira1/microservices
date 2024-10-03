@@ -15,13 +15,12 @@ import (
 	findbalances "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_balances"
 	updatebalances "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/update_balances"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/web"
-	"github.com/andrefsilveira1/microservices/wallet_balance/internal/web/server"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/events"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/kafka"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/uow"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -70,22 +69,24 @@ func main() {
 	ctx := context.Background()
 	uow := uow.NewUow(ctx, db)
 
-	uow.Register("TransactionDB", func(tx *sql.Tx) interface{} {
-		return database.NewTransactionDB(db)
+	uow.Register("BalancesDB", func(tx *sql.Tx) interface{} {
+		return database.NewBalancesDB(db)
 	})
 
 	// registerTransactionUseCase := registertransaction.NewRegisterTransactionUseCase(uow, eventDispatcher, eventRegistered)
 	// findTransactionUseCase := gettransaction.NewFindTransactionUseCase(uow, eventDispatcher, eventFoundEvent)
 	updateBalancesUseCase := updatebalances.NewUpdateBalanceUseCase(uow, eventDispatcher, eventUpdatedBalance)
 	findBalancesUseCase := findbalances.NewFindBalancesUseCase(uow, eventDispatcher, eventFoundBalance)
-	server := server.NewServer(":8000")
 
 	// transactionHandler := web.NewWebTransactionHandler(*findTransactionUseCase)
 	// server.AddHandler("/transactions", transactionHandler.FindTransaction)
 
+	r := mux.NewRouter()
 	balancesHandler := web.NewWebBalanceHandler(*findBalancesUseCase)
-	server.AddHandler(http.MethodGet, "/balances/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id := chi.URLParam(r, "id")
+	r.HandleFunc("/balances/{id}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+
 		input := findbalances.FindBalancesInputDTO{
 			ID: id,
 		}
@@ -96,10 +97,9 @@ func main() {
 			return
 		}
 
-		// Respond with JSON
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(balance)
-	})
+	}).Methods(http.MethodGet)
 
 	go func() {
 		for {
@@ -126,5 +126,7 @@ func main() {
 		}
 	}()
 
-	server.Start()
+	http.Handle("/", r)
+	log.Println("Server starting on port 8000")
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
