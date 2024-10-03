@@ -2,9 +2,11 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	findbalances "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_balances"
+	"github.com/gorilla/mux"
 )
 
 type BalanceHandler struct {
@@ -18,11 +20,11 @@ func NewWebBalanceHandler(findBalancesUseCase findbalances.FindBalancesUseCase) 
 }
 
 func (h *BalanceHandler) FindBalance(w http.ResponseWriter, r *http.Request) {
-	var dto findbalances.FindBalancesInputDTO
-	err := json.NewDecoder(r.Body).Decode(&dto)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	vars := mux.Vars(r)
+	id := vars["id"]
+	fmt.Println("GO ID INPUT ===> ", id)
+	dto := findbalances.FindBalancesInputDTO{
+		ID: id,
 	}
 
 	ctx := r.Context()
