@@ -21,15 +21,20 @@ func NewServer(serverPort string) *Server {
 	}
 }
 
-func (s *Server) AddHandler(path string, handler http.HandlerFunc) {
-	s.Handlers[path] = handler
+func (s *Server) AddHandler(method, path string, handler http.HandlerFunc) {
+	switch method {
+	case http.MethodGet:
+		s.Router.Get(path, handler)
+	case http.MethodPost:
+		s.Router.Post(path, handler)
+	case http.MethodPut:
+		s.Router.Put(path, handler)
+	case http.MethodDelete:
+		s.Router.Delete(path, handler)
+	}
 }
 
 func (s *Server) Start() {
 	s.Router.Use(middleware.Logger)
-	for path, handler := range s.Handlers {
-		s.Router.Post(path, handler)
-	}
-
 	http.ListenAndServe(s.ServerPort, s.Router)
 }

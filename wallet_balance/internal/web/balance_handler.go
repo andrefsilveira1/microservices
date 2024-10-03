@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -17,6 +18,11 @@ func NewWebBalanceHandler(findBalancesUseCase findbalances.FindBalancesUseCase) 
 	return &BalanceHandler{
 		FindBalancesUseCase: findBalancesUseCase,
 	}
+}
+
+func (h *BalanceHandler) FindBalanceByID(id findbalances.FindBalancesInputDTO, ctx context.Context) (*findbalances.FindBalancesOutputDTO, error) {
+	// Call the use case to get the balance by id
+	return h.FindBalancesUseCase.Execute(ctx, id)
 }
 
 func (h *BalanceHandler) FindBalance(w http.ResponseWriter, r *http.Request) {
