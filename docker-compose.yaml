@@ -40,7 +40,7 @@ services:
       KAFKA_BROKER: kafka:29092
       KAFKA_TOPIC: transaction_topic 
     ports:
-      - 8000:8000
+      - 3003:3003
     depends_on:
       - wallet_balance_db
       - kafka

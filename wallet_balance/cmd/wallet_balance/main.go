@@ -127,6 +127,6 @@ func main() {
 	}()
 
 	http.Handle("/", r)
-	log.Println("Server starting on port 8000")
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Println("Server starting on port 3003")
+	log.Fatal(http.ListenAndServe(":3003", nil))
 }
