@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/database"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event/handler"
 	findbalances "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_balances"
-	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
 	updatebalances "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/update_balances"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/web"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/web/server"
@@ -20,6 +20,7 @@ import (
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/kafka"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/uow"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/go-chi/chi"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -61,8 +62,8 @@ func main() {
 	kafkaProducer := kafka.NewKafkaProducer(&configMap)
 	eventDispatcher := events.NewEventDispatcher()
 	eventDispatcher.Register("TransactionFound", handler.NewTransactionFoundKafkaHandler(kafkaProducer))
-	eventFoundEvent := event.NewTransactionFound()
 	eventFoundBalance := event.NewBalanceFound()
+	// eventFoundEvent := event.NewTransactionFound()
 	// eventRegistered := event.NewTransactionRegistered()
 	eventUpdatedBalance := event.NewBalanceUpdated()
 
@@ -74,16 +75,31 @@ func main() {
 	})
 
 	// registerTransactionUseCase := registertransaction.NewRegisterTransactionUseCase(uow, eventDispatcher, eventRegistered)
-	findTransactionUseCase := gettransaction.NewFindTransactionUseCase(uow, eventDispatcher, eventFoundEvent)
+	// findTransactionUseCase := gettransaction.NewFindTransactionUseCase(uow, eventDispatcher, eventFoundEvent)
 	updateBalancesUseCase := updatebalances.NewUpdateBalanceUseCase(uow, eventDispatcher, eventUpdatedBalance)
 	findBalancesUseCase := findbalances.NewFindBalancesUseCase(uow, eventDispatcher, eventFoundBalance)
 	server := server.NewServer(":8000")
 
-	transactionHandler := web.NewWebTransactionHandler(*findTransactionUseCase)
-	server.AddHandler("/transactions", transactionHandler.FindTransaction)
+	// transactionHandler := web.NewWebTransactionHandler(*findTransactionUseCase)
+	// server.AddHandler("/transactions", transactionHandler.FindTransaction)
 
 	balancesHandler := web.NewWebBalanceHandler(*findBalancesUseCase)
-	server.AddHandler("/balances/{id}", balancesHandler.FindBalance)
+	server.AddHandler(http.MethodGet, "/balances/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		input := findbalances.FindBalancesInputDTO{
+			ID: id,
+		}
+
+		balance, err := balancesHandler.FindBalanceByID(input, ctx)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Respond with JSON
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(balance)
+	})
 
 	go func() {
 		for {
