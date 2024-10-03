@@ -13,7 +13,7 @@ import (
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/event/handler"
 	findbalances "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_balances"
 	gettransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/find_transaction"
-	registertransaction "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/register_transaction"
+	updatebalances "github.com/andrefsilveira1/microservices/wallet_balance/internal/usecase/update_balances"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/web"
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/web/server"
 	"github.com/andrefsilveira1/microservices/wallet_balance/pkg/events"
@@ -53,7 +53,7 @@ func main() {
 
 	defer consumer.Close()
 
-	err = consumer.Subscribe("transactions", nil)
+	err = consumer.Subscribe("balances", nil)
 	if err != nil {
 		log.Fatalf("Error subscribing to Kafka topic: %s", err)
 	}
@@ -63,7 +63,8 @@ func main() {
 	eventDispatcher.Register("TransactionFound", handler.NewTransactionFoundKafkaHandler(kafkaProducer))
 	eventFoundEvent := event.NewTransactionFound()
 	eventFoundBalance := event.NewBalanceFound()
-	eventRegistered := event.NewTransactionRegistered()
+	// eventRegistered := event.NewTransactionRegistered()
+	eventUpdatedBalance := event.NewBalanceUpdated()
 
 	ctx := context.Background()
 	uow := uow.NewUow(ctx, db)
@@ -72,8 +73,9 @@ func main() {
 		return database.NewTransactionDB(db)
 	})
 
+	// registerTransactionUseCase := registertransaction.NewRegisterTransactionUseCase(uow, eventDispatcher, eventRegistered)
 	findTransactionUseCase := gettransaction.NewFindTransactionUseCase(uow, eventDispatcher, eventFoundEvent)
-	registerTransactionUseCase := registertransaction.NewRegisterTransactionUseCase(uow, eventDispatcher, eventRegistered)
+	updateBalancesUseCase := updatebalances.NewUpdateBalanceUseCase(uow, eventDispatcher, eventUpdatedBalance)
 	findBalancesUseCase := findbalances.NewFindBalancesUseCase(uow, eventDispatcher, eventFoundBalance)
 	server := server.NewServer(":8000")
 
@@ -89,18 +91,18 @@ func main() {
 			if err == nil {
 				log.Printf("Transaction received: %s \n", string(msg.Value))
 
-				var kafkaMsg registertransaction.KafkaMessage
+				var kafkaMsg updatebalances.KafkaMessage
 				if err := json.Unmarshal(msg.Value, &kafkaMsg); err != nil {
 					log.Printf("Error unmarshalling Kafka message: %v", err)
 					continue
 				}
 				payload := kafkaMsg.Payload
 				log.Printf("Processing payload: %+v", payload)
-				output, err := registerTransactionUseCase.Execute(ctx, payload)
+				err := updateBalancesUseCase.Execute(ctx, payload)
 				if err != nil {
 					log.Printf("Error executing register transaction use case: %v", err)
 				} else {
-					log.Printf("Transaction successfully processed, Output ID: %s", output.ID)
+					log.Printf("Transaction successfully processed")
 				}
 			} else {
 				log.Printf("Error reading message from Kafka: %v", err)
