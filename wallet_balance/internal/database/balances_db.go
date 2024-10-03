@@ -15,21 +15,19 @@ func (t *TransactionDB) UpdateBalances(account_id_from string, balanceChange flo
 		return fmt.Errorf("failed to fetch current balance for account %s: %v", account_id_from, err)
 	}
 
-	newBalance := currentBalance + balanceChange
-
 	stmt, err := t.DB.Prepare("UPDATE accounts SET balance = ? WHERE id = ?")
 	if err != nil {
 		return fmt.Errorf("failed to prepare update statement: %v", err)
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(newBalance, account_id_from)
+	_, err = stmt.Exec(balanceChange, account_id_from)
 	if err != nil {
 		return fmt.Errorf("failed to update balance for account %s: %v", account_id_from, err)
 	}
 
 	fmt.Printf("Updated balance for account %s: old balance = %.2f, change = %.2f, new balance = %.2f\n",
-		account_id_from, currentBalance, balanceChange, newBalance)
+		account_id_from, currentBalance, balanceChange, balanceChange)
 
 	return nil
 }
