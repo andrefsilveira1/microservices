@@ -8,7 +8,17 @@ import (
 	"github.com/andrefsilveira1/microservices/wallet_balance/internal/entity"
 )
 
-func (t *TransactionDB) UpdateBalances(account_id_from string, balanceChange float64) error {
+type BalancesDB struct {
+	DB *sql.DB
+}
+
+func NewBalancesDB(db *sql.DB) *BalancesDB {
+	return &BalancesDB{
+		DB: db,
+	}
+}
+
+func (t *BalancesDB) UpdateBalances(account_id_from string, balanceChange float64) error {
 	var currentBalance float64
 	err := t.DB.QueryRow("SELECT balance FROM accounts WHERE id = ?", account_id_from).Scan(&currentBalance)
 	if err != nil {
@@ -32,7 +42,7 @@ func (t *TransactionDB) UpdateBalances(account_id_from string, balanceChange flo
 	return nil
 }
 
-func (t *TransactionDB) FindBalances(accountID string) (*entity.Account, error) {
+func (t *BalancesDB) FindBalances(accountID string) (*entity.Account, error) {
 	account := &entity.Account{}
 
 	stmt, err := t.DB.Prepare("SELECT id, client_id, balance, created_at FROM accounts WHERE id = ?")

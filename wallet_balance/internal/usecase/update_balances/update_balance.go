@@ -72,7 +72,7 @@ func (u *UpdateBalanceUseCase) Execute(ctx context.Context, input UpdateBalanceI
 }
 
 func (u *UpdateBalanceUseCase) getTransactionRepository(ctx context.Context) gateway.BalancesGateway {
-	repo, err := u.Uow.GetRepository(ctx, "TransactionDB")
+	repo, err := u.Uow.GetRepository(ctx, "BalancesDB")
 	if err != nil {
 		panic(err)
 	}

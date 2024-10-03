@@ -40,7 +40,7 @@ func (u *FindBalancesUseCase) Execute(ctx context.Context, input FindBalancesInp
 	err := u.Uow.Do(ctx, func(_ *uow.Uow) error {
 		transactionRepository := u.getTransactionRepository(ctx)
 
-		account, err := transactionRepository.Find(input.ID)
+		account, err := transactionRepository.FindBalances(input.ID)
 		if err != nil {
 			return err
 		}
